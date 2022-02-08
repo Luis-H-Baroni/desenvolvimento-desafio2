@@ -57,6 +57,7 @@ module.exports = {
 					affiliation: "org1.department1",
 					enrollmentID: usuarioID,
 					role: "client",
+					attrs: [{ name: "rh", value: "true", ecert: true }],
 				},
 				adminUser
 			)

@@ -54,7 +54,7 @@ async function main() {
 				certificate: enrollment.certificate,
 				privateKey: enrollment.key.toBytes(),
 			},
-			mspId: "Org2MSP",
+			mspId: "Org1MSP",
 			type: "X.509",
 		}
 		wallet.put(appAdmin, x509Identity)
