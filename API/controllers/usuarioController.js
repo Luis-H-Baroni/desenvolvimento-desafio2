@@ -29,20 +29,21 @@ const criaUsuario = async (req, res) => {
 	}
 	console.log(payload)
 
-	console.log("--1--")
 	await Usuario.create(payload).then((response) => {
+		console.log("1 - Create offchain db register")
 		if (
 			typeof response === "object" &&
 			"error" in response &&
 			response.error !== null
 		) {
-			console.log("res retornou erro")
+			console.log("1 - Error")
 
 			return res.status(500).json({
 				error: response.error,
 			})
 		} else {
 			if (payload.rh) {
+				console.log("2 - Register RH on network")
 				Network.registerRhOnNetwork(payload.userID, payload.rh).then(
 					(response) => {
 						//return error if error in response
@@ -52,21 +53,25 @@ const criaUsuario = async (req, res) => {
 							response.error !== null
 						) {
 							console.log(response.error)
-							Usuario.findOneAndDelete({ userID: payload.userID }).then(
-								(response) => {
-									return res.status(500).json({
-										error: response.error,
-									})
-								}
-							)
+							res.status(500).json({
+								error: response.error,
+							})
+
+							Usuario.findOneAndDelete({ userID: payload.userID }).then(() => {
+								console.log("2 - Error")
+								console.log("2 - Delete offchain db register")
+								return
+							})
+						} else {
+							console.log("2 - Registered on network")
+
+							return res.status(201).json({ success: response })
 						}
 						//else return success
-						console.log("Registered on network")
-
-						return res.status(201).json({ success: response })
 					}
 				)
 			} else {
+				console.log("2 - Register on network")
 				Network.registerOnNetwork(payload.userID, payload.rh).then(
 					(response) => {
 						//return error if error in response
@@ -78,6 +83,8 @@ const criaUsuario = async (req, res) => {
 							console.log(response.error)
 							Usuario.findOneAndDelete({ userID: payload.userID }).then(
 								(response) => {
+									console.log("2 - Error")
+									console.log("2 - Delete offchain db register")
 									return res.status(500).json({
 										error: response.error,
 									})
@@ -85,15 +92,13 @@ const criaUsuario = async (req, res) => {
 							)
 						}
 						//else return success
-						console.log("Registered on network")
+						console.log("2 - Registered on network")
 						return res.status(201).json({ success: response })
 					}
 				)
 			}
 		}
 	})
-
-	console.log("--2--")
 }
 
 const listaUmUsuario = async (req, res) => {
