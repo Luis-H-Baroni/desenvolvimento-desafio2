@@ -25,39 +25,75 @@ const criaUsuario = async (req, res) => {
 		userID: String(getNumber()),
 		nome: req.body.nome,
 		email: req.body.email,
+		rh: req.body.rh,
 	}
 	console.log(payload)
+
 	console.log("--1--")
-	await Network.registrar(payload.userID).then((response) => {
-		console.log("entrou")
-		//return error if error in response
+	await Usuario.create(payload).then((response) => {
 		if (
 			typeof response === "object" &&
 			"error" in response &&
 			response.error !== null
 		) {
 			console.log("res retornou erro")
-			res.status(500).json({
+
+			return res.status(500).json({
 				error: response.error,
 			})
-			return
 		} else {
-			//else return success
-			console.log("Registered on network")
+			if (payload.rh) {
+				Network.registerRhOnNetwork(payload.userID, payload.rh).then(
+					(response) => {
+						//return error if error in response
+						if (
+							typeof response === "object" &&
+							"error" in response &&
+							response.error !== null
+						) {
+							console.log(response.error)
+							Usuario.findOneAndDelete({ userID: payload.userID }).then(
+								(response) => {
+									return res.status(500).json({
+										error: response.error,
+									})
+								}
+							)
+						}
+						//else return success
+						console.log("Registered on network")
+
+						return res.status(201).json({ success: response })
+					}
+				)
+			} else {
+				Network.registerOnNetwork(payload.userID, payload.rh).then(
+					(response) => {
+						//return error if error in response
+						if (
+							typeof response === "object" &&
+							"error" in response &&
+							response.error !== null
+						) {
+							console.log(response.error)
+							Usuario.findOneAndDelete({ userID: payload.userID }).then(
+								(response) => {
+									return res.status(500).json({
+										error: response.error,
+									})
+								}
+							)
+						}
+						//else return success
+						console.log("Registered on network")
+						return res.status(201).json({ success: response })
+					}
+				)
+			}
 		}
 	})
+
 	console.log("--2--")
-
-	try {
-		console.log("criando")
-		const usuario = await Usuario.create(payload)
-		console.log("criado")
-
-		res.status(201).json(usuario)
-	} catch (error) {
-		console.log("res retornou erro 2")
-		return res.status(500).json({ msg: error })
-	}
 }
 
 const listaUmUsuario = async (req, res) => {
@@ -100,7 +136,7 @@ const updateUsuario = async (req, res) => {
 const deleteUsuario = async (req, res) => {
 	try {
 		const { id: usuarioId } = req.params
-		const umUsuario = await Usuario.findOneAndDelete({ _id: usuarioId })
+		const umUsuario = await Usuario.findOneAndDelete({ userID: usuarioId })
 		if (!umUsuario) {
 			return res
 				.status(404)
