@@ -131,10 +131,6 @@ module.exports = {
 					usuarioID +
 					" and imported it into the wallet"
 			)
-
-			// Disconnect from the gateway.
-
-			console.log("admin user admin disconnected")
 		} catch (err) {
 			//print and return error
 			console.log(err)
