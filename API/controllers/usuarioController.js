@@ -63,11 +63,10 @@ const criaUsuario = async (req, res) => {
 								return
 							})
 						} else {
+							//else return success
 							console.log("2 - Registered on network")
-
 							return res.status(201).json({ success: response })
 						}
-						//else return success
 					}
 				)
 			} else {
@@ -81,19 +80,20 @@ const criaUsuario = async (req, res) => {
 							response.error !== null
 						) {
 							console.log(response.error)
-							Usuario.findOneAndDelete({ userID: payload.userID }).then(
-								(response) => {
-									console.log("2 - Error")
-									console.log("2 - Delete offchain db register")
-									return res.status(500).json({
-										error: response.error,
-									})
-								}
-							)
+							res.status(500).json({
+								error: response.error,
+							})
+
+							Usuario.findOneAndDelete({ userID: payload.userID }).then(() => {
+								console.log("2 - Error")
+								console.log("2 - Delete offchain db register")
+								return
+							})
+						} else {
+							//else return success
+							console.log("2 - Registered on network")
+							return res.status(201).json({ success: response })
 						}
-						//else return success
-						console.log("2 - Registered on network")
-						return res.status(201).json({ success: response })
 					}
 				)
 			}
