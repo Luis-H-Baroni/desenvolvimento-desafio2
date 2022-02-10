@@ -26,11 +26,12 @@ function sleep(ms) {
 }
 
 module.exports = {
-	registerOnNetwork: async (usuarioID) => {
+	registerOnNetwork: async (usuarioID, rh) => {
 		const walletPath = path.join(process.cwd(), "/wallet")
 		const wallet = await Wallets.newFileSystemWallet(walletPath)
 		console.log(`Wallet path: ${walletPath}`)
 
+		let secret
 		try {
 			const caURL = ccp.certificateAuthorities[caName].url
 			const ca = new FabricCAServices(caURL)
@@ -43,14 +44,27 @@ module.exports = {
 			const adminUser = await provider.getUserContext(adminIdentity, "admin")
 
 			// Register the user, enroll the user, and import the new identity into the wallet.
-			const secret = await ca.register(
-				{
-					affiliation: "org1.department1",
-					enrollmentID: usuarioID,
-					role: "client",
-				},
-				adminUser
-			)
+			// check if 'rh' flag is true
+			if (rh) {
+				secret = await ca.register(
+					{
+						affiliation: "org1.department1",
+						enrollmentID: usuarioID,
+						role: "client",
+						attrs: [{ name: "rh", value: "true", ecert: true }],
+					},
+					adminUser
+				)
+			} else {
+				secret = await ca.register(
+					{
+						affiliation: "org1.department1",
+						enrollmentID: usuarioID,
+						role: "client",
+					},
+					adminUser
+				)
+			}
 
 			const enrollment = await ca.enroll({
 				enrollmentID: usuarioID,
@@ -67,67 +81,7 @@ module.exports = {
 			}
 			wallet.put(usuarioID, x509Identity)
 			console.log(
-				"Successfully registered and enrolled admin user " +
-					usuarioID +
-					" and imported it into the wallet"
-			)
-
-			console.log("admin user admin disconnected")
-		} catch (err) {
-			//print and return error
-			console.log(err)
-			let error = {}
-			error.error = err.message
-			return error
-		}
-
-		await sleep(2000)
-
-		return await submitRegisterTransaction(usuarioID, wallet)
-	},
-	registerRhOnNetwork: async (usuarioID) => {
-		const walletPath = path.join(process.cwd(), "/wallet")
-		const wallet = await Wallets.newFileSystemWallet(walletPath)
-		console.log(`Wallet path: ${walletPath}`)
-
-		try {
-			const caURL = ccp.certificateAuthorities[caName].url
-			const ca = new FabricCAServices(caURL)
-
-			const adminIdentity = await wallet.get("admin")
-
-			const provider = wallet
-				.getProviderRegistry()
-				.getProvider(adminIdentity.type)
-			const adminUser = await provider.getUserContext(adminIdentity, "admin")
-
-			// Register the user, enroll the user, and import the new identity into the wallet.
-			const secret = await ca.register(
-				{
-					affiliation: "org1.department1",
-					enrollmentID: usuarioID,
-					role: "client",
-					attrs: [{ name: "rh", value: "true", ecert: true }],
-				},
-				adminUser
-			)
-
-			const enrollment = await ca.enroll({
-				enrollmentID: usuarioID,
-				enrollmentSecret: secret,
-			})
-
-			const x509Identity = {
-				credentials: {
-					certificate: enrollment.certificate,
-					privateKey: enrollment.key.toBytes(),
-				},
-				mspId: "Org1MSP",
-				type: "X.509",
-			}
-			wallet.put(usuarioID, x509Identity)
-			console.log(
-				"Successfully registered and enrolled admin user " +
+				"Successfully registered and enrolled user " +
 					usuarioID +
 					" and imported it into the wallet"
 			)

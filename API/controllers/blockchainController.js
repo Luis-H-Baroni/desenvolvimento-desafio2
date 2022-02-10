@@ -76,66 +76,32 @@ const createUser = async (req, res) => {
 				error: response.error,
 			})
 		} else {
-			//check if 'rh' flag is true
-			if (payload.rh) {
-				//register user on blockchain with 'rh' attributes
-				console.log("2 - Register RH on network")
-				Network.registerRhOnNetwork(payload.userID, payload.rh).then(
-					(response) => {
-						//return error if error in response
-						if (
-							typeof response === "object" &&
-							"error" in response &&
-							response.error !== null
-						) {
-							console.log(response.error)
-							res.status(500).json({
-								error: response.error,
-							})
+			//register user on blockchain with 'rh' attribute or not
+			console.log("2 - Register on network")
+			Network.registerOnNetwork(payload.userID, payload.rh).then((response) => {
+				//return error if error in response
+				if (
+					typeof response === "object" &&
+					"error" in response &&
+					response.error !== null
+				) {
+					console.log(response.error)
+					res.status(500).json({
+						error: response.error,
+					})
 
-							//deletes previous created user
-							Usuario.findOneAndDelete({ userID: payload.userID }).then(() => {
-								console.log("2 - Error")
-								console.log("2 - Delete offchain db register")
-								return
-							})
-						} else {
-							//else return success
-							console.log("2 - Registered on network")
-							return res.status(201).json({ success: response })
-						}
-					}
-				)
-			} else {
-				//register user on blockchain without 'rh' attributes
-				console.log("2 - Register on network")
-				Network.registerOnNetwork(payload.userID, payload.rh).then(
-					(response) => {
-						//return error if error in response
-						if (
-							typeof response === "object" &&
-							"error" in response &&
-							response.error !== null
-						) {
-							console.log(response.error)
-							res.status(500).json({
-								error: response.error,
-							})
-
-							//deletes previous created user
-							Usuario.findOneAndDelete({ userID: payload.userID }).then(() => {
-								console.log("2 - Error")
-								console.log("2 - Delete offchain db register")
-								return
-							})
-						} else {
-							//else return success
-							console.log("2 - Registered on network")
-							return res.status(201).json({ success: response })
-						}
-					}
-				)
-			}
+					//deletes previous created user
+					Usuario.findOneAndDelete({ userID: payload.userID }).then(() => {
+						console.log("2 - Error")
+						console.log("2 - Delete offchain db register")
+						return
+					})
+				} else {
+					//else return success
+					console.log("2 - Registered on network")
+					return res.status(201).json({ success: response })
+				}
+			})
 		}
 	})
 }
