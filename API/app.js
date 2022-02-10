@@ -17,10 +17,11 @@ app.use("/usuario", usuarios)
 app.use("/block", block)
 
 //registra usuario na blockchain diretamente
-app.post("/testes", (req, res) => {
+app.post("/testes", async (req, res) => {
 	let usuarioID = req.body.usuarioID
+	let rh = true
 
-	addNetwork.registrar(usuarioID).then((response) => {
+	await addNetwork.registerOnNetwork(usuarioID, rh).then((response) => {
 		//return error if error in response
 		if (
 			typeof response === "object" &&
