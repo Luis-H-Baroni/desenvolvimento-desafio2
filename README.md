@@ -1,4 +1,4 @@
-# Instalação
+# Instalação do connection profile
 
 Os passos a seguir partem do pressuposto de que o smart-contract ja tenha seu deploy realizado no Environment.
 
