@@ -135,7 +135,7 @@ const readUser = async (req, res) => {
 }
 
 const deleteUser = async (req, res) => {
-	const { userId } = req.body
+	const userId = req.body.usuarioID
 	try {
 		const walletPath = path.join(process.cwd(), "wallet")
 		const wallet = await Wallets.newFileSystemWallet(walletPath)
@@ -143,7 +143,7 @@ const deleteUser = async (req, res) => {
 		const gateway = new Gateway()
 		await gateway.connect(ccp, {
 			wallet,
-			identity: "Org1 Admin",
+			identity: "admin",
 			discovery: { enabled: true, asLocalhost: true },
 		})
 
@@ -153,10 +153,12 @@ const deleteUser = async (req, res) => {
 
 		const response = await contract.submitTransaction("deleteUsuario", userId)
 
+		await gateway.disconnect()
 		console.log(response)
 
-		res.status(200).json(JSON.parse(response.toString()))
+		res.status(200).json(response)
 	} catch (error) {
+		console.log(error)
 		res.status(400).json(error)
 	}
 }
